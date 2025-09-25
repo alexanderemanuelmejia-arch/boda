@@ -1,0 +1,503 @@
+<?php
+function ValidateEmail($email)
+{
+   $pattern = '/^([0-9a-z]([-.\w]*[0-9a-z])*@(([0-9a-z])+([-\w]*[0-9a-z])*\.)+[a-z]{2,6})$/i';
+   return preg_match($pattern, $email);
+}
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['formid']) && $_POST['formid'] == 'layoutgrid13')
+{
+   $mailto = 'alexanderemanuelmejia@gmail.com';
+   $mailfrom = isset($_POST['email']) ? $_POST['email'] : $mailto;
+   $subject = 'Website form';
+   $message = 'Values submitted from web site form:';
+   $success_url = '';
+   $error_url = '';
+   $eol = "\n";
+   $error = '';
+   $internalfields = array ("submit", "reset", "send", "filesize", "formid", "captcha", "recaptcha_challenge_field", "recaptcha_response_field", "g-recaptcha-response", "h-captcha-response");
+   $boundary = md5(uniqid(time()));
+   $header  = 'From: '.$mailfrom.$eol;
+   $header .= 'Reply-To: '.$mailfrom.$eol;
+   $header .= 'MIME-Version: 1.0'.$eol;
+   $header .= 'Content-Type: multipart/mixed; boundary="'.$boundary.'"'.$eol;
+   $header .= 'X-Mailer: PHP v'.phpversion().$eol;
+
+   try
+   {
+      if (!ValidateEmail($mailfrom))
+      {
+         $error .= "The specified email address (" . $mailfrom . ") is invalid!\n<br>";
+         throw new Exception($error);
+      }
+      $message .= $eol;
+      $message .= "IP Address : ";
+      $message .= $_SERVER['REMOTE_ADDR'];
+      $message .= $eol;
+      foreach ($_POST as $key => $value)
+      {
+         if (!in_array(strtolower($key), $internalfields))
+         {
+            if (is_array($value))
+            {
+               $message .= ucwords(str_replace("_", " ", $key)) . " : " . implode(",", $value) . $eol;
+            }
+            else
+            {
+               $message .= ucwords(str_replace("_", " ", $key)) . " : " . $value . $eol;
+            }
+         }
+      }
+      $body  = 'This is a multi-part message in MIME format.'.$eol.$eol;
+      $body .= '--'.$boundary.$eol;
+      $body .= 'Content-Type: text/plain; charset=UTF-8'.$eol;
+      $body .= 'Content-Transfer-Encoding: 8bit'.$eol;
+      $body .= $eol.stripslashes($message).$eol;
+      if (!empty($_FILES))
+      {
+         foreach ($_FILES as $key => $value)
+         {
+             if ($_FILES[$key]['error'] == 0)
+             {
+                $body .= '--'.$boundary.$eol;
+                $body .= 'Content-Type: '.$_FILES[$key]['type'].'; name='.$_FILES[$key]['name'].$eol;
+                $body .= 'Content-Transfer-Encoding: base64'.$eol;
+                $body .= 'Content-Disposition: attachment; filename='.$_FILES[$key]['name'].$eol;
+                $body .= $eol.chunk_split(base64_encode(file_get_contents($_FILES[$key]['tmp_name']))).$eol;
+             }
+         }
+      }
+      $body .= '--'.$boundary.'--'.$eol;
+      if ($mailto != '')
+      {
+         mail($mailto, $subject, $body, $header);
+      }
+      header('Location: '.$success_url);
+   }
+   catch (Exception $e)
+   {
+      $errorcode = file_get_contents($error_url);
+      $replace = "##error##";
+      $errorcode = str_replace($replace, $e->getMessage(), $errorcode);
+      echo $errorcode;
+   }
+   exit;
+}
+?>
+<!doctype html>
+<html lang="es-hn">
+<head>
+<meta charset="utf-8">
+<title>Tarea de BODA</title>
+<meta name="generator" content="WYSIWYG Web Builder 18 - https://www.wysiwygwebbuilder.com">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="font-awesome.min.css" rel="stylesheet">
+<link href="BODA.css" rel="stylesheet">
+<link href="index.css" rel="stylesheet">
+<script src="jquery-3.6.4.min.js"></script>
+<script src="wb.parallax.min.js"></script>
+<link rel="stylesheet" href="fancybox/jquery.fancybox-1.3.4.css">
+<script src="fancybox/jquery.easing-1.3.pack.js"></script>
+<script src="fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+<script src="fancybox/jquery.mousewheel-3.0.4.pack.js"></script>
+<script>
+$(document).ready(function()
+{
+   $('#Layer2').parallax();
+   $('#Layer3').parallax();
+   $("a[data-rel='PhotoGallery1']").attr('rel', 'PhotoGallery1');
+   $("a[rel^='PhotoGallery1']").fancybox({});
+   $("a[href*='#Somos']").click(function(event)
+   {
+      event.preventDefault();
+      $('html, body').stop().animate({ scrollTop: $('#wb_Somos').offset().top }, 600, 'linear');
+   });
+   $("a[href*='#Lugar']").click(function(event)
+   {
+      event.preventDefault();
+      $('html, body').stop().animate({ scrollTop: $('#wb_Lugar').offset().top }, 600, 'linear');
+   });
+   $("a[href*='#Fotos']").click(function(event)
+   {
+      event.preventDefault();
+      $('html, body').stop().animate({ scrollTop: $('#wb_Fotos').offset().top }, 600, 'linear');
+   });
+   $("a[href*='#Contacto']").click(function(event)
+   {
+      event.preventDefault();
+      $('html, body').stop().animate({ scrollTop: $('#wb_Contacto').offset().top }, 600, 'linear');
+   });
+});
+</script>
+</head>
+<body>
+<div id="wb_Somos" style="position:absolute;left:1210px;top:1048px;width:26px;height:21px;z-index:94;">
+<div id="Somos" style="visibility:hidden;"></div>
+</div>
+<div id="wb_Lugar" style="position:absolute;left:1211px;top:2232px;width:24px;height:23px;z-index:95;">
+<div id="Lugar" style="visibility:hidden;"></div>
+</div>
+<div id="wb_Fotos" style="position:absolute;left:1211px;top:2858px;width:25px;height:23px;z-index:96;">
+<div id="Fotos" style="visibility:hidden;"></div>
+</div>
+<div id="wb_Contacto" style="position:absolute;left:1210px;top:3779px;width:26px;height:25px;z-index:97;">
+<div id="Contacto" style="visibility:hidden;"></div>
+</div>
+<div id="Layer1" style="position:relative;text-align:center;width:100%;height:250px;float:left;clear:left;display:block;z-index:98;">
+<div id="Layer1_Container" style="width:1200px;position:relative;margin-left:auto;margin-right:auto;text-align:left;">
+<div id="wb_Image3" style="position:absolute;left:37px;top:37px;width:176px;height:176px;z-index:0;">
+<img src="images/Sticker circular boda flores.png" id="Image3" alt="" width="176" height="176"></div>
+<div id="wb_CssMenu1" style="position:absolute;left:818px;top:46px;width:336px;height:28px;z-index:1;">
+<ul id="CssMenu1" role="menubar" class="nav">
+<li role="menuitem" class="nav-item firstmain"><a class="nav-link" href="#Somos" target="_self">Somos</a>
+</li>
+<li role="menuitem" class="nav-item"><a class="nav-link" href="#Lugar" target="_self">Lugar</a>
+</li>
+<li role="menuitem" class="nav-item"><a class="nav-link" href="#Fotos" target="_self">Fotos</a>
+</li>
+<li role="menuitem" class="nav-item"><a class="nav-link" href="#Contacto" target="_self">Contacto</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="Layer2" style="position:relative;text-align:center;width:100%;height:798px;float:left;clear:left;display:block;z-index:99;">
+<div id="Layer2_Container" style="width:1200px;position:relative;margin-left:auto;margin-right:auto;text-align:left;">
+<div id="wb_Text4" style="position:absolute;left:969px;top:129px;width:203px;height:42px;z-index:2;">
+<span style="color:#000000;font-family:Arial;font-size:37px;"><strong>18/09/2025</strong></span></div>
+<div id="wb_Text5" style="position:absolute;left:965px;top:129px;width:203px;height:42px;z-index:3;">
+<span style="color:#FFFFFF;font-family:Arial;font-size:37px;"><strong>18/09/2025</strong></span></div>
+<div id="wb_Text1" style="position:absolute;left:922px;top:56px;width:246px;height:42px;z-index:4;">
+<span style="color:#696969;font-family:Arial;font-size:37px;"><strong>Nuestra Boda</strong></span></div>
+<div id="wb_Text6" style="position:absolute;left:922px;top:214px;width:246px;height:232px;text-align:justify;z-index:5;">
+<span style="color:#696969;font-family:Arial;font-size:16px;"><strong>Hoy comienza el capítulo más hermoso de nuestra vida. Después de tantas risas,&nbsp; aventuras y momentos compartidos, hemos decidido dar el siguiente paso en este <br>viaje juntos: casarnos. Sentimos una felicidad inmensa al mirar hacia el futuro,&nbsp; sabiendo que nos tenemos el uno al otro para seguir creciendo, aprendiendo y <br>amándonos cada día más..</strong></span></div>
+</div>
+</div>
+<div id="wb_LayoutGrid1">
+<div id="LayoutGrid1">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine1" style="display:inline-block;width:1160px;z-index:6;">
+<div id="wb_Text2">
+<span style="color:#696969;font-family:Arial;font-size:27px;"><strong>LA PAREJA FELIZ</strong></span>
+</div>
+<hr id="HorizontalLine3" style="display:inline-block;width:1160px;z-index:8;">
+<div id="wb_Text11">
+<span style="color:#808080;font-family:Arial;font-size:17px;">Nos sentimos increíblemente afortunados de tenernos el uno al otro, y aún más agradecidos de contar con personas tan especiales como ustedes en nuestras vidas. Cada uno de ustedes ha sido parte de nuestra historia de una manera única, y no podemos esperar a celebrar este día tan especial rodeados de amor, alegría y buenos momentos.</span>
+</div>
+<hr id="HorizontalLine4" style="display:inline-block;width:1160px;z-index:10;">
+<hr id="HorizontalLine7" style="display:inline-block;width:1160px;z-index:11;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid14">
+<div id="LayoutGrid14">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine24" style="display:inline-block;width:1170px;z-index:12;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid2">
+<div id="LayoutGrid2">
+<div class="row">
+<div class="col-1">
+<div id="wb_Image2" style="display:inline-block;width:100%;height:auto;z-index:13;">
+<img src="images/Men.png" id="Image2" alt="" width="170" height="170">
+</div>
+</div>
+<div class="col-2">
+<div class="col-2-padding">
+<div id="wb_Text7">
+<span style="color:#696969;font-family:Arial;font-size:20px;"><strong>ESPOSO</strong></span>
+</div>
+<hr id="HorizontalLine5" style="display:inline-block;width:370px;z-index:18;">
+<div id="wb_Text8">
+<span style="color:#808080;font-family:Arial;font-size:13px;">Con una sonrisa siempre lista y un corazón generoso, Joheny es el tipo de persona que ilumina cualquier habitación con su presencia. Amante de la aventura y apasionado por los caballos, como la música y las carreras de cinta.</span>
+</div>
+<hr id="HorizontalLine9" style="display:inline-block;width:370px;z-index:20;">
+<div id="wb_LayoutGrid16">
+<div id="LayoutGrid16">
+<div class="row">
+<div class="col-1">
+<div id="wb_Icon1" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:14;">
+<div id="Icon1"><i class="fa fa-facebook-official"></i></div>
+</div>
+<div id="wb_Icon2" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:15;">
+<div id="Icon2"><i class="fa fa-twitter"></i></div>
+</div>
+<div id="wb_Icon3" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:16;">
+<div id="Icon3"><i class="fa fa-whatsapp"></i></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr id="HorizontalLine25" style="display:inline-block;width:370px;z-index:22;">
+</div>
+</div>
+<div class="col-3">
+<div id="wb_Image1" style="display:inline-block;width:100%;height:auto;z-index:23;">
+<img src="images/Girl.png" id="Image1" alt="" width="170" height="170">
+</div>
+</div>
+<div class="col-4">
+<div id="wb_Text9">
+<span style="color:#696969;font-family:Arial;font-size:20px;"><strong>ESPOSA</strong></span>
+</div>
+<hr id="HorizontalLine6" style="display:inline-block;width:370px;z-index:28;">
+<div id="wb_Text10">
+<span style="color:#808080;font-family:Arial;font-size:13px;">Con una risa contagiosa y un espíritu cálido, Ely ha logrado tocar los corazones de quienes la rodean con su amabilidad y alegría. Apasionada por la agricultura, la pintura, amante de los caballos, como la lectura, la cocina, siempre ha creído en el poder del amor y la conexión verdadera.</span>
+</div>
+<hr id="HorizontalLine28" style="display:inline-block;width:370px;z-index:30;">
+<div id="wb_LayoutGrid17">
+<div id="LayoutGrid17">
+<div class="row">
+<div class="col-1">
+<div id="wb_Icon4" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:24;">
+<div id="Icon4"><i class="fa fa-facebook-official"></i></div>
+</div>
+<div id="wb_Icon5" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:25;">
+<div id="Icon5"><i class="fa fa-twitter"></i></div>
+</div>
+<div id="wb_Icon6" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:26;">
+<div id="Icon6"><i class="fa fa-whatsapp"></i></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr id="HorizontalLine26" style="display:inline-block;width:370px;z-index:32;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid3">
+<div id="LayoutGrid3">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine10" style="display:inline-block;width:1170px;z-index:33;">
+</div>
+</div>
+</div>
+</div>
+<div id="Layer3" style="position:relative;text-align:center;width:100%;height:639px;float:left;clear:left;display:block;z-index:100;">
+<div id="Layer3_Container" style="width:1200px;position:relative;margin-left:auto;margin-right:auto;text-align:left;">
+<div id="wb_Shape1" style="position:absolute;left:244px;top:192px;width:713px;height:328px;opacity:0.50;z-index:37;">
+<div id="Shape1"></div></div>
+<div id="wb_Icon7" style="position:absolute;left:527px;top:16px;width:146px;height:126px;text-align:center;z-index:38;">
+<div id="Icon7"><i class="fa fa-clock-o"></i></div></div>
+<div id="wb_Text3" style="position:absolute;left:434px;top:226px;width:332px;height:39px;text-align:justify;z-index:39;">
+<span style="color:#FFFFFF;font-family:Arial;font-size:35px;">CASARSE PRONTO</span></div>
+<div id="wb_Text13" style="position:absolute;left:380px;top:298px;width:441px;height:116px;z-index:40;">
+<span style="color:#F5F5F5;font-family:Arial;font-size:17px;">El viaje que hemos recorrido hasta aquí ha sido increíble, y no podemos esperar a celebrar nuestro amor con todos aquellos que han sido parte de nuestra historia. La fecha se acerca, y estamos emocionados por compartir con ustedes el día más especial de nuestras vidas.</span></div>
+</div>
+</div>
+<div id="wb_LayoutGrid5">
+<div id="LayoutGrid5">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine11" style="display:inline-block;width:1170px;z-index:41;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid4">
+<div id="LayoutGrid4">
+<div class="row">
+<div class="col-1">
+<div id="wb_Text12">
+<span style="color:#696969;font-family:Arial;font-size:21px;">Evento Especial</span>
+</div>
+<hr id="HorizontalLine12" style="display:inline-block;width:520px;z-index:43;">
+<div id="wb_Text14">
+<span style="color:#000000;font-family:Arial;font-size:13px;">Estamos emocionados de compartir con ustedes que el día más esperado de nuestras vidas está por llegar. El sabado, 29 de Junio, celebramos el comienzo de una nueva aventura como marido y mujer, y no podemos esperar a hacerlo rodeados de nuestros seres más queridos.</span>
+</div>
+</div>
+<div class="col-2">
+<div id="wb_Icon8" style="display:inline-block;width:86px;height:40px;text-align:center;z-index:45;">
+<div id="Icon8"><i class="fa fa-calendar"></i></div>
+</div>
+<hr id="HorizontalLine13" style="display:inline-block;width:220px;z-index:46;">
+<div id="wb_Text15">
+<span style="color:#000000;font-family:Arial;font-size:13px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh</span>
+</div>
+</div>
+<div class="col-3">
+<div id="wb_Icon9" style="display:inline-block;width:86px;height:40px;text-align:center;z-index:48;">
+<div id="Icon9"><i class="fa fa-map-marker"></i></div>
+</div>
+<hr id="HorizontalLine14" style="display:inline-block;width:220px;z-index:49;">
+<div id="wb_Text16">
+<span style="color:#000000;font-family:Arial;font-size:13px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid6">
+<div id="LayoutGrid6">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine15" style="display:inline-block;width:1170px;z-index:51;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid7">
+<div id="LayoutGrid7">
+<div class="row">
+<div class="col-1">
+ 
+
+<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30821.329455509243!2d-87.2975782721533!3d15.066569161317421!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f68b44542c493ed%3A0x3a9a32f53faf844c!2sYorito%2C%20Yoro!5e0!3m2!1ses-419!2shn!4v1758827581459!5m2!1ses-419!2shn" width="1333" height="600" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+</div><hr id="HorizontalLine29" style="display:block;width: 100%;z-index:52;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid8">
+<div id="LayoutGrid8">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine2" style="display:inline-block;width:1170px;z-index:53;">
+<div id="wb_Text17">
+<span style="color:#696969;font-family:Arial;font-size:27px;"><strong>GALERÍA DE ÁLBUMES</strong></span>
+</div>
+<hr id="HorizontalLine16" style="display:inline-block;width:1170px;z-index:55;">
+<div id="wb_Text18">
+<span style="color:#808080;font-family:Arial;font-size:16px;">Esperamos que disfruten explorando estas imágenes tanto como nosotros disfrutamos vivirlas. Cada sonrisa, cada abrazo y cada mirada capturada aquí representa el amor, la alegría y las aventuras que hemos compartido y que aún nos esperan.</span>
+</div>
+<hr id="HorizontalLine17" style="display:inline-block;width:1170px;z-index:57;">
+<hr id="HorizontalLine18" style="display:inline-block;width:1170px;z-index:58;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid9">
+<div id="LayoutGrid9">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine20" style="display:inline-block;width:1170px;z-index:59;">
+<div id="wb_PhotoGallery1" style="display:inline-block;width:100%;z-index:60;">
+<div id="PhotoGallery1">
+   <div class="thumbnails">
+      <div class="thumbnail">
+         <a href="images/01.png" data-rel="PhotoGallery1"><img alt="" src="images/01.png" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="thumbnail">
+         <a href="images/1.png" data-rel="PhotoGallery1"><img alt="" src="images/1.png" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="thumbnail">
+         <a href="images/02.png" data-rel="PhotoGallery1"><img alt="" src="images/02.png" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="clearfix visible-col3"></div>
+      <div class="thumbnail">
+         <a href="images/2.png" data-rel="PhotoGallery1"><img alt="" src="images/2.png" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="thumbnail">
+         <a href="images/3.png" data-rel="PhotoGallery1"><img alt="" src="images/3.png" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="thumbnail">
+         <a href="images/5.png" data-rel="PhotoGallery1"><img alt="" src="images/5.png" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="clearfix visible-col3"></div>
+      <div class="thumbnail">
+         <a href="images/6.png" data-rel="PhotoGallery1"><img alt="" src="images/6.png" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="thumbnail">
+         <a href="images/couple-443600_1280.jpg" data-rel="PhotoGallery1"><img alt="" src="images/couple-443600_1280.jpg" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="thumbnail">
+         <a href="images/bride-2566244_1280.jpg" data-rel="PhotoGallery1"><img alt="" src="images/bride-2566244_1280.jpg" loading="lazy" class="image" width="374" height="249"></a>
+      </div>
+      <div class="clearfix visible-col3"></div>
+   </div>
+</div>
+</div>
+<hr id="HorizontalLine23" style="display:inline-block;width:1170px;z-index:61;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid10">
+<div id="LayoutGrid10">
+<div class="row">
+<div class="col-1">
+<div id="wb_Text19">
+<span style="color:#000000;font-family:Arial;font-size:35px;">Contactos</span>
+</div>
+<hr id="HorizontalLine19" style="display:inline-block;width:1170px;z-index:63;">
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid13">
+<form name="LayoutGrid13" method="post" action="<?php echo basename(__FILE__); ?>" enctype="multipart/form-data" id="LayoutGrid13">
+<input type="hidden" name="formid" value="layoutgrid13">
+<div class="row">
+<div class="col-1">
+<div id="wb_LayoutGrid12">
+<div id="LayoutGrid12">
+<div class="row">
+<div class="col-1">
+<input type="text" id="Editbox1" style="display:block;width: 100%;height:40px;z-index:71;" name="Editbox1" value="" spellcheck="false" required placeholder="Nombre">
+<input type="text" id="Editbox2" style="display:block;width: 100%;height:40px;z-index:72;" name="Editbox2" value="" spellcheck="false" required placeholder="Telefono">
+<input type="text" id="Editbox3" style="display:block;width: 100%;height:40px;z-index:73;" name="Editbox2" value="" spellcheck="false" required placeholder="E-mail Adress">
+</div>
+<div class="col-2">
+<textarea name="TextArea1" id="TextArea1" style="display:block;width: 100%;;height:120px;z-index:74;" rows="6" cols="66" spellcheck="false" required placeholder="Mensaje"></textarea>
+</div>
+</div>
+</div>
+</div>
+<div id="wb_LayoutGrid11">
+<div id="LayoutGrid11">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine21" style="display:inline-block;width:1140px;z-index:75;">
+<input type="submit" id="Button1" name="" value="Enviar" style="display:inline-block;width:229px;height:66px;z-index:76;">
+<hr id="HorizontalLine22" style="display:inline-block;width:1140px;z-index:77;">
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</form>
+</div>
+<div id="wb_LayoutGrid15">
+<div id="LayoutGrid15">
+<div class="row">
+<div class="col-1">
+<hr id="HorizontalLine30" style="display:inline-block;width:1170px;z-index:83;">
+<div id="wb_Text20">
+<span style="color:#808080;font-family:Arial;font-size:16px;">Copyright © </span><span style="color:#808080;font-family:'Cambria Math';font-size:16px;">𝒜𝓁𝑒𝓍𝒶𝓃𝒹𝑒𝓇</span><span style="color:#808080;font-family:Arial;font-size:16px;"> </span><span style="color:#808080;font-family:'Cambria Math';font-size:16px;">𝑀𝑒𝒿𝒾𝒶</span>
+</div>
+<hr id="HorizontalLine32" style="display:inline-block;width:1170px;z-index:85;">
+<div id="wb_LayoutGrid18">
+<div id="LayoutGrid18">
+<div class="row">
+<div class="col-1">
+<div id="wb_Icon11" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:80;">
+<a href="https://www.youtube.com/@alexandermejia486"><div id="Icon11"><i class="fa fa-youtube-play"></i></div></a>
+</div>
+<div id="wb_Icon10" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:81;">
+<a href="https://www.facebook.com/?locale=es_LA"><div id="Icon10"><i class="fa fa-facebook-official"></i></div></a>
+</div>
+<div id="wb_Icon12" style="display:inline-block;width:36px;height:33px;text-align:center;z-index:82;">
+<a href="https://www.instagram.com/"><div id="Icon12"><i class="fa fa-instagram"></i></div></a>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr id="HorizontalLine31" style="display:inline-block;width:1170px;z-index:87;">
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
